@@ -1,0 +1,32 @@
+{
+    "Name":
+    {
+        "type": "string",
+        "isOptional": false
+    },
+    "Address":
+    {
+        "type": "string",
+        "isOptional": false
+    },
+    "City":
+    {
+        "type": "string",
+        "isOptional": false
+    },
+    "Country":
+    {
+        "type": "string",
+        "isOptional": false
+    },
+    "EMail":
+    {
+        "type": "string",
+        "isOptional": true
+    },
+    "PhoneNumber":
+    {
+        "type": "string",
+        "isOptional": true
+    }
+}

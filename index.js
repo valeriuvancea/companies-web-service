@@ -4,114 +4,81 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 
-var companies;
+var companies = readFile('companies.json');
 
-app.get('/', (req,res) =>
+function readFile(file)
 {
-    readFile();
-    console.log(companies);
-    res.json("done");
-})
-
-function readFile()
-{
-    fs.readFileSync('companies.json', 'utf8', (err, data) => 
-    {
-        if (err) 
-        {
-            return err;
-        }
-        companies = JSON.parse(data);
-    }); 
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
 app.get('/companies', (req, res) =>
 {
-    fs.readFile('companies.json', 'utf8', (err, data) => 
-    {
-        if (err) 
-        {
-            return res.send(err);
-        }
-        res.send(JSON.parse(data));
-    });
+    res.send(companies);
 });
 
-app.get('/company/:companyID', (req, res) =>
+app.get('/companies/:companyID', (req, res) =>
 {
     var companyID = req.params['companyID'];
     if (companyID != parseInt(companyID) || companyID < 0)
     {
-        res.send(getErrorObject([`The id ${companyID} is not a positive integer. Please enter a valid id!`]));
+        res.send(generateErrorObject([`The id ${companyID} is not a positive integer. Please enter a valid id!`]));
     }
     else
     {
-        fs.readFile('companies.json', 'utf8', (err, data) => 
+        var companyFound = companies.find((element) =>
         {
-            if (err) 
-            {
-                return err;
-            }
-            var companies = JSON.parse(data);
-            var comapnyFound = companies.find((element) =>
-            {
-                return element.ID == companyID;
-            });
-            if (comapnyFound == undefined)
-            {
-                res.status = 
-                res.json(getErrorObject([`The company with the id ${companyID} doesn't exist`]));
-            }
-            else 
-            {
-                res.json(comapnyFound);
-            }
+            return element.ID == companyID;
         });
+        if (companyFound == undefined)
+        {
+            res.json(generateErrorObject([`The company with the id ${companyID} doesn't exist`]));
+        }
+        else 
+        {
+            delete companyFound.ID;
+            res.json(companyFound);
+        }
     }
 });
 
-app.put('/company/:companyID', (req, res) => 
+app.put('/companies/:companyID', (req, res) => 
 {
     var received = req.body;
-    if (received == undefined)
+    if (received == undefined || req.headers['content-type'] != 'application/json')
     {
-        res.json(getErrorObject(["To update a company use its information in the body as JSON an change the information there!"]));
-    }
-    else if (received.constructor !== {}.constructor)
-    {
-        res.json(getErrorObject(["The information given in the body is not a simple JSON object!"]));
+        res.json(generateErrorObject(["The body content must be JSON. Please use the header 'contet-type' with the value 'application/json'"]));
     }
     else 
     {
         var companyID = req.params['companyID'];
-        fs.readFile('companies.json', 'utf8', (err, data) => 
+        var companyFound = companies.find((element) =>
         {
-            if (err) 
-            {
-                return err;
+            return element.ID == companyID;
+        });
+        var object = getCompanyFromObject(received);
+        if(object.errors.length == 0)
+        {     
+            object.company = {"ID": companyID, ...object.company};
+            if (companyFound == undefined)
+            {  
+                addCompany(object.company);
             }
-            var companies = JSON.parse(data);
-            var comapnyFound = companies.find((element) =>
+            else
             {
-                return element.ID == companyID;
-            });
-            if (comapnyFound == undefined)
-            {
-                res.status = 
-                res.json(getErrorObject([`The company with the id ${companyID} doesn't exist`]));
+                updateCompanyWithIndex(object.company,companies.indexOf(companyFound));
             }
-            else 
-            {
-                res.json(comapnyFound);
-            }
-        }); 
+            res.json(object.company);
+        }
+        else
+        {
+            res.json(generateErrorObject(object.errors));
+        }
     }
-    res.send("done");
 });
 
 app.listen(port, () => console.log(`App started and listenting on port ${port}`));
 
-function getErrorObject(messages)
+function generateErrorObject(messages)
 {
     var object = new Object();
     object.errors = new Array();
@@ -120,4 +87,83 @@ function getErrorObject(messages)
         object.errors.push(element);
     });
     return object;
+}
+
+function getCompanyFromObject(object)
+{
+    var returnValue = new Object();
+    returnValue.company = new Object();
+    returnValue.errors = new Array();
+    var companyStructure = readFile('company-structure.json');
+
+    Object.getOwnPropertyNames(companyStructure).forEach((property, idx, array) => 
+    {
+        var isPropertyOptional = false;
+        isPropertyOptional = companyStructure[property].isOptional;
+        if (objectHasProperty(object, property))
+        {
+            if (propertyOfObjectIsTypeOf(property, object, companyStructure[property].type))
+            {
+                returnValue.company[property]= new Object();
+                returnValue.company[property] = object[property];
+            }
+            else
+            {
+                returnValue.errors.push(`The the value of the property ${property} isn't ${companyStructure[property]}.` +
+                `Please use a ${companyStructure[property]} value for the property ${property}`);
+            }
+        }
+        else if(!isPropertyOptional)
+        {
+            returnValue.errors.push(`The received object doesn't have the ${property} property! Please add a property ${property} with a string value.`);
+        }
+    });  
+    return returnValue;
+}
+
+
+function objectHasProperty(object,property)
+{
+    if(object.hasOwnProperty(property))
+    {
+        return true;
+    }
+    return false;
+}
+
+function propertyOfObjectIsTypeOf(property,object,type)
+{
+    if(typeof object[property] === type)
+    {
+        return true;
+    }
+    return false;
+}
+
+function addCompany(company) 
+{
+    companies.push(company);
+    saveCompanies();
+}
+
+function updateCompanyWithIndex(company,index)
+{
+    var companyFound = companies.find((element) =>
+    {
+        return element.ID == index;
+    });
+    if (companyFound != undefined)
+    {
+        companies[index] = company;
+        saveCompanies();
+    }
+}
+
+function saveCompanies()
+{
+    fs.writeFile('companies.json', JSON.stringify(companies), (err) => 
+    {
+        if (err) throw err;
+        console.log('The file has been saved!');
+    });
 }
