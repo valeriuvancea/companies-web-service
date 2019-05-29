@@ -1,0 +1,20 @@
+[
+    {
+        "ID": 0,
+        "Name": "Company1",
+        "Address": "address",
+        "City": "city",
+        "Country": "country",
+        "EMail": "asd@aa.we",
+        "PhoneNumber": "+2123"
+    },
+    {
+        "ID": 2,
+        "Name": "Company2",
+        "Address": "address",
+        "City": "city",
+        "Country": "country",
+        "EMail": "asd@aa.we",
+        "PhoneNumber": "+2123"
+    }
+]
