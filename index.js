@@ -4,7 +4,10 @@ const app = express();
 const port = 3000;
 app.use(express.json());
 
-var companies = readFile('companies.json');
+var companies = readFile('companies.json').sort((a,b)  => 
+{
+    return a.CompanyID - b.CompanyID;
+});
 
 function readFile(file)
 {
@@ -19,54 +22,37 @@ app.get('/companies', (req, res) =>
 app.get('/companies/:companyID', (req, res) =>
 {
     var companyID = req.params['companyID'];
-    if (companyID != parseInt(companyID) || companyID < 0)
+    if (isCompanyIdValid(companyID))
     {
-        res.send(generateErrorObject([`The id ${companyID} is not a positive integer. Please enter a valid id!`]));
-    }
-    else
-    {
-        var companyFound = companies.find((element) =>
-        {
-            return element.ID == companyID;
-        });
+        var companyFound = findCompanyWithId(companyID);
         if (companyFound == undefined)
         {
-            res.json(generateErrorObject([`The company with the id ${companyID} doesn't exist`]));
+            res.json(generateErrorObject([`The company with id ${companyID} doesn't exist`]));
         }
         else 
         {
-            delete companyFound.ID;
+            delete companyFound.CompanyID;
             res.json(companyFound);
         }
     }
+    else
+    {       
+        res.send(generateErrorObject([`The id ${companyID} is not a positive integer. Please enter a valid id!`]));
+    }
 });
 
-app.put('/companies/:companyID', (req, res) => 
+app.post('/companies', (req, res) =>
 {
-    var received = req.body;
-    if (received == undefined || req.headers['content-type'] != 'application/json')
+    if (isRequestContentJson(req))
     {
-        res.json(generateErrorObject(["The body content must be JSON. Please use the header 'contet-type' with the value 'application/json'"]));
-    }
-    else 
-    {
-        var companyID = req.params['companyID'];
-        var companyFound = companies.find((element) =>
-        {
-            return element.ID == companyID;
-        });
-        var object = getCompanyFromObject(received);
+        var body = req.body;
+        var object = getCompanyFromObject(body);
         if(object.errors.length == 0)
         {     
-            object.company = {"ID": companyID, ...object.company};
-            if (companyFound == undefined)
-            {  
-                addCompany(object.company);
-            }
-            else
-            {
-                updateCompanyWithIndex(object.company,companies.indexOf(companyFound));
-            }
+            var companyID = companies[companies.length-1].CompanyID + 1;
+            object.company = {"CompanyID": companyID, ...object.company};
+            addCompany(object.company);
+            res.statusCode = 201;//CREATED
             res.json(object.company);
         }
         else
@@ -74,7 +60,55 @@ app.put('/companies/:companyID', (req, res) =>
             res.json(generateErrorObject(object.errors));
         }
     }
+    else 
+    {
+        res.json(generateErrorObject(["The body content must be JSON. Please use the header 'contet-type' with the value 'application/json'"])); 
+    }
+})
+
+app.put('/companies/:companyID', (req, res) => 
+{
+    var companyID = req.params['companyID'];
+    if (isCompanyIdValid(companyID))
+    {
+        if (isRequestContentJson(req))
+        {
+            var body = req.body;
+            var object = getCompanyFromObject(body);
+            if(object.errors.length == 0)
+            {     
+                object.company = {"CompanyID": companyID, ...object.company};
+                var companyFound = findCompanyWithId(companyID);
+                if (companyFound == undefined)
+                {  
+                    addCompany(object.company);
+                }
+                else
+                {
+                    updateCompanyWithIndex(object.company,companies.indexOf(companyFound));
+                }
+                res.json(object.company);
+            }
+            else
+            {
+                res.json(generateErrorObject(object.errors));
+            }
+        }
+        else 
+        {
+            res.json(generateErrorObject(["The body content must be JSON. Please use the header 'contet-type' with the value 'application/json'"])); 
+        }
+    }
+    else
+    {       
+        res.send(generateErrorObject([`The id ${companyID} is not a positive integer. Please enter a valid id!`]));
+    }
 });
+
+app.post('/companies/:companyID/beneficialOwners', (req,res) =>
+{
+
+})
 
 app.listen(port, () => console.log(`App started and listenting on port ${port}`));
 
@@ -147,16 +181,13 @@ function addCompany(company)
 }
 
 function updateCompanyWithIndex(company,index)
-{
-    var companyFound = companies.find((element) =>
+{        
+    if(companies[index] == undefined)
     {
-        return element.ID == index;
-    });
-    if (companyFound != undefined)
-    {
-        companies[index] = company;
-        saveCompanies();
+        thorw `Company with index ${index} doesn't exist!`;
     }
+    companies[index] = company;
+    saveCompanies();
 }
 
 function saveCompanies()
@@ -166,4 +197,30 @@ function saveCompanies()
         if (err) throw err;
         console.log('The file has been saved!');
     });
+}
+
+function isCompanyIdValid(companyID)
+{
+    if (companyID == parseInt(companyID) && companyID >= 0)
+    {
+        return true;
+    }
+    return false;
+}
+
+function findCompanyWithId(companyID)
+{
+    return companies.find((element) =>
+    {
+        return element.CompanyID == companyID;
+    });
+}
+
+function isRequestContentJson(request)
+{
+    if(request.body != undefined && request.headers['content-type'] == 'application/json')
+    {
+        return true;
+    }
+    return false;
 }
