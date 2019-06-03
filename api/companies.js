@@ -6,6 +6,13 @@ var companies = fileHandler.readFile('companies.json').sort((a,b)  =>
     return a.CompanyID - b.CompanyID;
 });
 module.exports.set = function(app) {
+    app.get('/', (req, res) =>
+    {
+        res.statusMessage = "Page not found";
+        res.statusCode = 404;//NOT FOUND
+        res.json('Page not found');
+    });
+
     app.get('/companies', (req, res) =>
     {
         res.json(companies);
