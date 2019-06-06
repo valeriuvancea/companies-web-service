@@ -8,6 +8,7 @@ var companies = fileHandler.readFile('companies.json').sort((a,b)  =>
 module.exports.set = function(app) {
     app.get('/', (req, res) =>
     {
+        res.set('Access-Control-Allow-Origin', '*');
         res.statusMessage = "Page not found";
         res.statusCode = 404;//NOT FOUND
         res.json('Page not found');
@@ -15,11 +16,13 @@ module.exports.set = function(app) {
 
     app.get('/companies', (req, res) =>
     {
+        res.set('Access-Control-Allow-Origin', '*');
         res.json(companies);
     });
 
     app.get('/companies/:companyID', (req, res) =>
     {
+        res.set('Access-Control-Allow-Origin', '*');
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
@@ -46,6 +49,7 @@ module.exports.set = function(app) {
 
     app.post('/companies', (req, res) =>
     {
+        res.set('Access-Control-Allow-Origin', '*');
         if (validation.isRequestContentJson(req))
         {
             var body = req.body;
@@ -75,6 +79,7 @@ module.exports.set = function(app) {
 
     app.put('/companies/:companyID', (req, res) => 
     {
+        res.set('Access-Control-Allow-Origin', '*');
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
