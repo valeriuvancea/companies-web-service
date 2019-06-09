@@ -1,9 +1,6 @@
 const fs = require('fs');
 module.exports = {
-    readFile: function (file)
-    {
-        return JSON.parse(fs.readFileSync(file, 'utf8'));
-    },
+    readFile: readFile,
     addCompanyToCompanies: function (company, companies) 
     {
         companies.push(company);
@@ -21,6 +18,13 @@ module.exports = {
         }
         companies[index] = company;
         saveCompanies(companies);
+    },
+    readCompanies: function ()
+    {
+        return readFile('companies.json').sort((a,b)  => 
+        {
+            return a.CompanyID - b.CompanyID;
+        })
     }
 }
 
@@ -31,4 +35,9 @@ function saveCompanies (companies)
         if (err) throw err;
         console.log('The file has been saved!');
     });
+}
+
+function readFile(file)
+{
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
 }

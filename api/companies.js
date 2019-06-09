@@ -1,10 +1,6 @@
 var validation = require('./validation/validation');
 var errors = require('./validation/errors');
 var fileHandler = require('../filesHandling');
-var companies = fileHandler.readFile('companies.json').sort((a,b)  => 
-{
-    return a.CompanyID - b.CompanyID;
-});
 module.exports.set = function(app) {
     app.get('/', (req, res) =>
     {
@@ -15,11 +11,13 @@ module.exports.set = function(app) {
 
     app.get('/companies', (req, res) =>
     {
+        let companies = fileHandler.readCompanies();
         res.json(companies);
     });
 
     app.get('/companies/:companyID', (req, res) =>
     {
+        let companies = fileHandler.readCompanies();
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
@@ -46,6 +44,7 @@ module.exports.set = function(app) {
 
     app.post('/companies', (req, res) =>
     {
+        let companies = fileHandler.readCompanies();
         if (validation.isRequestContentJson(req))
         {
             var body = req.body;
@@ -75,6 +74,7 @@ module.exports.set = function(app) {
 
     app.put('/companies/:companyID', (req, res) => 
     {
+        let companies = fileHandler.readCompanies();
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
