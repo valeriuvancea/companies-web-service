@@ -49,7 +49,7 @@ module.exports.set = function(app) {
 
     app.post('/companies', (req, res) =>
     {
-        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Origin','*');
         if (validation.isRequestContentJson(req))
         {
             var body = req.body;
@@ -79,7 +79,7 @@ module.exports.set = function(app) {
 
     app.put('/companies/:companyID', (req, res) => 
     {
-        res.set('Access-Control-Allow-Origin', '*');
+        res.set('Access-Control-Allow-Origin','*');
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
