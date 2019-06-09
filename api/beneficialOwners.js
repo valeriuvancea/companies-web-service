@@ -25,6 +25,10 @@ module.exports.set = function(app) {
                     }
                     else
                     {
+                        if (companyFound.BeneficialOwners == undefined)
+                        {
+                            companyFound.BeneficialOwners = [];
+                        }
                         companyFound.BeneficialOwners = companyFound.BeneficialOwners.concat(object.beneficialOwners);                  
                         var company = {"CompanyID": Number(companyID), ...companyFound};
                         fileHandler.updateCompanyWithIndexFromCompanies(company,companies.indexOf(companyFound),companies);               
