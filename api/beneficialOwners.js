@@ -8,7 +8,6 @@ var companies = fileHandler.readFile('companies.json').sort((a,b)  =>
 module.exports.set = function(app) {
     app.post('/companies/:companyID/beneficialOwners', (req,res) =>
     {
-        res.set('Access-Control-Allow-Origin', '*');
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
