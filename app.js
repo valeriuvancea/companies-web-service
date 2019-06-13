@@ -2,8 +2,8 @@ const express = require('express');
 const app = express();
 const port = 3000;
 app.use(express.json());
-var cors = require('cors')
-app.use(cors())
+var cors = require('cors');
+app.use(cors());
 
 var companiesApi = require('./api/companies');
 companiesApi.set(app);
