@@ -87,14 +87,12 @@ module.exports.set = function(app) {
                     object.company = {"CompanyID": Number(companyID), ...object.company};
                     if (companyFound == undefined)
                     {  
-                        object.company.BeneficialOwners = [];
-                        fileHandler.addCompanyToCompanies(object.company, companies);            
-                        res.statusMessage = "The company has been created";
-                        res.statusCode = 201;//CREATED
+                        res.statusMessage = "Company not found";
+                        res.statusCode = 404;//NOT FOUND 
+                        res.json(errors.errorMessageForCompanyWithIDDoesNotExist(companyID));
                     }
                     else
                     {
-                        object.company.BeneficialOwners = new Array();
                         object.company.BeneficialOwners = companyFound.BeneficialOwners;
                         fileHandler.updateCompanyWithIndexFromCompanies(object.company,companies.indexOf(companyFound),companies);
                         res.statusMessage = "The company has been updated"

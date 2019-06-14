@@ -1,4 +1,5 @@
 const fs = require('fs');
+const forceSync = require('sync-rpc')
 module.exports = {
     readFile: readFile,
     addCompanyToCompanies: function (company, companies) 
@@ -21,7 +22,7 @@ module.exports = {
     },
     readCompanies: function ()
     {
-        return readFile('companies.json').sort((a,b)  => 
+        return readCompanies().sort((a,b)  => 
         {
             return a.CompanyID - b.CompanyID;
         })
@@ -30,11 +31,14 @@ module.exports = {
 
 function saveCompanies (companies)
 {
-    fs.writeFile('companies.json', JSON.stringify(companies), (err) => 
-    {
-        if (err) throw err;
-        console.log('The file has been saved!');
-    });
+    var syncSaveFunction = forceSync(require.resolve('./awsS3Bucket/awsS3BucketSaveCompanies'));
+    syncSaveFunction(companies);
+}
+
+function readCompanies()
+{
+    var syncReadFunction = forceSync(require.resolve('./awsS3Bucket/awsS3BucketGetCompanies'));
+    return syncReadFunction();
 }
 
 function readFile(file)

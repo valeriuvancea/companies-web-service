@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.475.0",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
-    "cors": "^2.8.5"
+    "sync-rpc": "^1.3.4"
   }
 }
