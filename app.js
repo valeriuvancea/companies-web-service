@@ -3,7 +3,6 @@ const app = express();
 const cors = require('cors')
 const port = 3000;
 app.use(express.json());
-var cors = require('cors');
 app.use(cors());
 
 var companiesApi = require('./api/companies');
