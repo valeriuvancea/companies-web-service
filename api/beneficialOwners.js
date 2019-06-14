@@ -1,13 +1,10 @@
 var validation = require('./validation/validation');
 var errors = require('./validation/errors');
 var fileHandler = require('../filesHandling');
-var companies = fileHandler.readFile('companies.json').sort((a,b)  => 
-{
-    return a.CompanyID - b.CompanyID;
-});
 module.exports.set = function(app) {
     app.post('/companies/:companyID/beneficialOwners', (req,res) =>
     {
+        let companies = fileHandler.readCompanies();
         var companyID = req.params['companyID'];
         if (validation.isCompanyIdValid(companyID))
         {
@@ -25,6 +22,10 @@ module.exports.set = function(app) {
                     }
                     else
                     {
+                        if (companyFound.BeneficialOwners == undefined)
+                        {
+                            companyFound.BeneficialOwners = [];
+                        }
                         companyFound.BeneficialOwners = companyFound.BeneficialOwners.concat(object.beneficialOwners);                  
                         var company = {"CompanyID": Number(companyID), ...companyFound};
                         fileHandler.updateCompanyWithIndexFromCompanies(company,companies.indexOf(companyFound),companies);               
