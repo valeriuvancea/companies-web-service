@@ -349,6 +349,6 @@ Body:
 curl https://companies-web-service.herokuapp.com/companies/2/beneficialOwners -d '[{"FullName":"Beneficial owner 1"},{"FullName":"Beneficial owner 2"}]' -header "content-type: application/json" -X POST
 ```
 
-#Behind the code
+# Behind the code
 
 The application listents on a port provided by heroku and responde to the requests that come on that port. It also stores/get the companies information from an amazon aws S3 bucket.
