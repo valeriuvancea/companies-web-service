@@ -19,7 +19,7 @@
         "type": "string",
         "isOptional": false
     },
-    "EMail":
+    "Email":
     {
         "type": "string",
         "isOptional": true
