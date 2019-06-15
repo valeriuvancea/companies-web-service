@@ -51,6 +51,12 @@ module.exports.set = function(app) {
             var object = validation.getCompanyFromBody(body);
             if(object.errors.length == 0)
             {     
+                if (companies[companies.length-1].CompanyID + 1 > Number.MAX_SAFE_INTEGER)
+                {
+                    res.statusCode = 406;//Not Acceptable
+                    res.statusMessage = "Max safe integer reached for company ID"
+                    res.json(errors.generateErrorObject(["Max safe integer reached for company ID"]));
+                }
                 var companyID = Number(companies[companies.length-1].CompanyID) + 1;
                 object.company = {"CompanyID": companyID, ...object.company,"BeneficialOwners": []};
                 fileHandler.addCompanyToCompanies(object.company, companies);
